@@ -164,11 +164,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 const prevBtn = modalGallery.querySelector('.prev-arrow');
                 const nextBtn = modalGallery.querySelector('.next-arrow');
 
+                // وضعیت اولیه قاطع برای دکمه‌ها
+                prevBtn.classList.add('disabled');
+                nextBtn.classList.remove('disabled');
+
                 const updateArrows = () => {
+                    const slideWidth = container.clientWidth;
+                    // جلوگیری از خطای محاسبه در زمان اجرای انیمیشن‌های سنگین یا وقتی کادر نامرئی است
+                    if (slideWidth < 20) return; 
+                    
                     if (container.scrollLeft <= 10) prevBtn.classList.add('disabled');
                     else prevBtn.classList.remove('disabled');
                     
-                    if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) nextBtn.classList.add('disabled');
+                    if (container.scrollLeft >= container.scrollWidth - slideWidth - 10) nextBtn.classList.add('disabled');
                     else nextBtn.classList.remove('disabled');
                 };
 
@@ -182,8 +190,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     resetZoom();
                     container.scrollBy({ left: container.clientWidth, behavior: 'smooth' });
                 });
+                
                 container.addEventListener('scroll', updateArrows);
-                setTimeout(updateArrows, 100);
+                
+                // استفاده از سنسور هوشمند برای رفع باگ غیب شدن دکمه‌ها
+                const resizeObserver = new ResizeObserver(() => {
+                    updateArrows();
+                });
+                resizeObserver.observe(container);
+
             } else {
                 modalGallery.innerHTML = `
                     ${zoomBtnHTML}
